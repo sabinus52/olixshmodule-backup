@@ -12,6 +12,7 @@
 ###
 # Paramètres du modules
 ##
+OLIX_MODULE_BACKUP_ALLBASES=false
 
 
 
@@ -20,7 +21,13 @@
 ##
 olixmodule_backup_require_libraries()
 {
+    load "utils/compression.sh"
+    load "utils/filesystem.sh"
+    load "utils/ftp.sh"
     load "modules/backup/lib/*"
+    load "utils/report.sh"
+    load "utils/mail.sh"
+    Module.installed 'mysql' && load "modules/mysql/lib/*" && Config.load 'mysql'
 }
 
 
