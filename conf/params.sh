@@ -63,6 +63,9 @@ function olixmodule_backup_params_get()
         mysql|postgres)
             OLIX_MODULE_BACKUP_BASES="$OLIX_MODULE_BACKUP_BASES $2"
             ;;
+        folder)
+            OLIX_MODULE_BACKUP_FOLDERS="$OLIX_MODULE_BACKUP_FOLDERS $2"
+            ;;
     esac
 }
 
@@ -89,6 +92,9 @@ function olixmodule_backup_params_debug ()
             debug "OLIX_MODULE_POSTGRES_PASS=${OLIX_MODULE_POSTGRES_PASS}"
             debug "OLIX_MODULE_BACKUP_BASES=${OLIX_MODULE_BACKUP_BASES}"
             debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
+            ;;
+        folder)
+            debug "OLIX_MODULE_BACKUP_FOLDERS=${OLIX_MODULE_BACKUP_FOLDERS}"
             ;;
     esac
     debug "OLIX_MODULE_BACKUP_PATH=${OLIX_MODULE_BACKUP_PATH}"

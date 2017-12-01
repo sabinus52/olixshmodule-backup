@@ -22,6 +22,7 @@ function olixmodule_backup_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} mysql     ${CVOID}  : Réalisation d'une sauvegarde des bases MySQL du serveur local"
     echo -e "${Cjaune} postgres  ${CVOID}  : Réalisation d'une sauvegarde des bases PostgeSQL du serveur local"
+    echo -e "${Cjaune} folder    ${CVOID}  : Réalisation d'une sauvegarde de dossiers du serveur local"
     echo -e "${Cjaune} help      ${CVOID}  : Affiche cet écran"
 }
 
@@ -73,6 +74,22 @@ function olixmodule_backup_usage_postgres()
     for I in $(Postgres.server.databases); do
         Print.usage.item "$I" "Base de de données $I" 15
     done
+}
+
+
+###
+# Usage de l'action FOLDER
+##
+function olixmodule_backup_usage_folder()
+{
+    debug "olixmodule_backup_usage_folder ()"
+    echo
+    echo -e "Réalisation d'une sauvegarde de dossiers du serveur local"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}folder${CVOID} ${CBLANC}[folder1..folderN] [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    olixmodule_backup_usage_param
 }
 
 

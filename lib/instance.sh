@@ -92,6 +92,32 @@ function Backup.Instance.printresult()
 
 
 ###
+# Fait une sauvegarde d'un répertoire
+# @param $1  : Nom du dossier
+##
+function Backup.Instance.folder()
+{
+    debug "Backup.Instance.folder ($1)"
+    local DIR=$1
+
+    Print.head2 "Sauvegarde du dossier %s" "$DIR"
+
+    if ! Directory.exists $DIR; then
+        warning "La dossier '${DIR}' n'existe pas"
+        return 1
+    fi
+
+    Backup.Instance.setfile "backup-$(basename $DIR)-" "$(Compression.tar.extension $OLIX_MODULE_BACKUP_INSTANCE_COMPRESS)"
+    info "Sauvegarde dossier (${DIR}) -> $(Backup.Instance.getfile)"
+
+    Compression.tar.create "$DIR" "$OLIX_MODULE_BACKUP_INSTANCE_FILE" "$EXCLUDE" "$(Compression.tar.mode $OLIX_MODULE_BACKUP_INSTANCE_COMPRESS)"
+    Backup.Instance.printresult $? || return 1
+
+    return 0
+}
+
+
+###
 # Compression d'un fichier de sauvegarde
 ##
 function Backup.Instance.compress()
