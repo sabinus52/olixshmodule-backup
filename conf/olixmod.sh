@@ -28,6 +28,7 @@ olixmodule_backup_require_libraries()
     load "utils/report.sh"
     load "utils/mail.sh"
     Module.installed 'mysql' && load "modules/mysql/lib/*" && Config.load 'mysql'
+    Module.installed 'postgres' && load "modules/postgres/lib/*" && Config.load 'postgres'
 }
 
 

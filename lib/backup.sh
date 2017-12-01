@@ -52,6 +52,33 @@ function Backup.mysql.base()
 
 
 ###
+# Fait une sauvegarde d'une base PostgreSQL
+# @param $1 : Nom de la base
+# @return bool
+##
+function Backup.postgres.base()
+{
+    debug "Backup.postgres.base ($1)"
+    local BASE=$1
+
+    Print.head2 "Dump de la base PostgreSQL %s" "$BASE"
+
+    if ! Postgres.base.exists $BASE; then
+        warning "La base '${BASE}' n'existe pas"
+        return 1
+    fi
+
+    Backup.Instance.setfile "dump-$BASE-" "$(Postgres.base.dump.ext c)"
+    info "Sauvegarde base PostgreSQL (${BASE}) -> $(Backup.Instance.getfile)"
+
+    Postgres.base.dump "$BASE" "$(Backup.Instance.getfile)" "c"
+    Backup.Instance.printresult $? || return 1
+
+    return 0
+}
+
+
+###
 # Termine la sauvegarde
 # @param $1 : Si erreur
 ##

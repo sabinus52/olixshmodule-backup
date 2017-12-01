@@ -60,7 +60,7 @@ function olixmodule_backup_params_parse()
 function olixmodule_backup_params_get()
 {
     case $1 in
-        mysql)
+        mysql|postgres)
             OLIX_MODULE_BACKUP_BASES="$OLIX_MODULE_BACKUP_BASES $2"
             ;;
     esac
@@ -79,6 +79,14 @@ function olixmodule_backup_params_debug ()
             debug "OLIX_MODULE_MYSQL_PORT=${OLIX_MODULE_MYSQL_PORT}"
             debug "OLIX_MODULE_MYSQL_USER=${OLIX_MODULE_MYSQL_USER}"
             debug "OLIX_MODULE_MYSQL_PASS=${OLIX_MODULE_MYSQL_PASS}"
+            debug "OLIX_MODULE_BACKUP_BASES=${OLIX_MODULE_BACKUP_BASES}"
+            debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
+            ;;
+        postgres)
+            debug "OLIX_MODULE_POSTGRES_HOST=${OLIX_MODULE_POSTGRES_HOST}"
+            debug "OLIX_MODULE_POSTGRES_PORT=${OLIX_MODULE_POSTGRES_PORT}"
+            debug "OLIX_MODULE_POSTGRES_USER=${OLIX_MODULE_POSTGRES_USER}"
+            debug "OLIX_MODULE_POSTGRES_PASS=${OLIX_MODULE_POSTGRES_PASS}"
             debug "OLIX_MODULE_BACKUP_BASES=${OLIX_MODULE_BACKUP_BASES}"
             debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
             ;;

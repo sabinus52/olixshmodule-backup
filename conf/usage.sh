@@ -21,6 +21,7 @@ function olixmodule_backup_usage_main()
     echo
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} mysql     ${CVOID}  : Réalisation d'une sauvegarde des bases MySQL du serveur local"
+    echo -e "${Cjaune} postgres  ${CVOID}  : Réalisation d'une sauvegarde des bases PostgeSQL du serveur local"
     echo -e "${Cjaune} help      ${CVOID}  : Affiche cet écran"
 }
 
@@ -45,6 +46,31 @@ function olixmodule_backup_usage_mysql()
     echo
     echo -e "${CJAUNE}Liste des BASES disponibles${CVOID} :"
     for I in $(Mysql.server.databases); do
+        Print.usage.item "$I" "Base de de données $I" 15
+    done
+}
+
+
+###
+# Usage de l'action POSTGRESQL
+##
+function olixmodule_backup_usage_postgres()
+{
+    debug "olixmodule_backup_usage_postgres ()"
+    echo
+    echo -e "Réalisation d'une sauvegarde des bases PostgreSQL du serveur local"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}postgres${CVOID} ${CBLANC}[base1..baseN] [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    echo -en "${CBLANC} --host=$OLIX_MODULE_POSTGRES_HOST ${CVOID}"; String.pad "--host=$OLIX_MODULE_POSTGRES_HOST" 30 " "; echo " : Host du serveur PostgreSQL"
+    echo -en "${CBLANC} --port=$OLIX_MODULE_POSTGRES_PORT ${CVOID}"; String.pad "--port=$OLIX_MODULE_POSTGRES_PORT" 30 " "; echo " : Port du serveur PostgreSQL"
+    echo -en "${CBLANC} --user=$OLIX_MODULE_POSTGRES_USER ${CVOID}"; String.pad "--user=$OLIX_MODULE_POSTGRES_USER" 30 " "; echo " : User du serveur PostgreSQL"
+    echo -en "${CBLANC} --pass= ${CVOID}"; String.pad "--pass=" 30 " "; echo " : Password du serveur PostgreSQL"
+    olixmodule_backup_usage_param
+    echo
+    echo -e "${CJAUNE}Liste des BASES disponibles${CVOID} :"
+    for I in $(Postgres.server.databases); do
         Print.usage.item "$I" "Base de de données $I" 15
     done
 }
