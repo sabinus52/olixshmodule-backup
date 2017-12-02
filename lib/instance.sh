@@ -28,15 +28,16 @@ OLIX_MODULE_BACKUP_INSTANCE_CHRONO_STOP=
 function Backup.Instance.initialize()
 {
     debug "Backup.Instance.initialize ($1, $2, $3)"
+
+    OLIX_MODULE_BACKUP_INSTANCE_CHRONO_START=$SECONDS
+    OLIX_MODULE_BACKUP_INSTANCE_CHRONO_STOP=
+
     [[ -z $1 ]] && return
     OLIX_MODULE_BACKUP_INSTANCE_PATH=$1
     [[ -z $2 ]] && return
     OLIX_MODULE_BACKUP_INSTANCE_COMPRESS=$2
     [[ -z $3 ]] && return
     OLIX_MODULE_BACKUP_INSTANCE_TTL=$3
-
-    OLIX_MODULE_BACKUP_INSTANCE_CHRONO_START=$SECONDS
-    OLIX_MODULE_BACKUP_INSTANCE_CHRONO_STOP=
 }
 
 
@@ -169,6 +170,10 @@ function Backup.Instance.export()
             Backup.export.ftp
             RET=$?
             ;;
+        ssh)
+            Backup.export.scp
+            RET=$?
+            ;;
         none|false|null)
             warning "Pas de transfert vers un autre serveur configuré"
             return 0
@@ -178,7 +183,7 @@ function Backup.Instance.export()
             return 1
     esac
 
-    Print.result $? "Transfert vers le serveur de backup" "" "$((SECONDS-START))"
+    Print.result $RET "Transfert vers le serveur de backup" "" "$((SECONDS-START))"
     [[ $? -ne 0 ]] && error && return 1
     return 0
 }
