@@ -70,6 +70,8 @@ function Backup.Instance.terminate()
 {
     debug "Backup.Instance.terminate ()"
 
+    Backup.Instance.export || return 1
+
     Backup.Instance.purge || return 1
 
     return 0
@@ -147,6 +149,36 @@ function Backup.Instance.compress()
     esac
 
     Print.result ${RET} "Compression du fichier" "$(File.size.human $OLIX_MODULE_BACKUP_INSTANCE_FILE)" "$((SECONDS-START))"
+    [[ $? -ne 0 ]] && error && return 1
+    return 0
+}
+
+
+
+###
+# Transfert du fichier de backup sur un serveur distant
+##
+function Backup.Instance.export()
+{
+    debug "Backup.Instance.export ()"
+    local RET
+    local START=$SECONDS
+
+    case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
+        ftp)
+            Backup.export.ftp
+            RET=$?
+            ;;
+        none|false|null)
+            warning "Pas de transfert vers un autre serveur configuré"
+            return 0
+            ;;
+        *)
+            error "Methode '$OLIX_MODULE_BACKUP_EXPORT_MODE' d'export de la sauvegarde inconnue"
+            return 1
+    esac
+
+    Print.result $? "Transfert vers le serveur de backup" "" "$((SECONDS-START))"
     [[ $? -ne 0 ]] && error && return 1
     return 0
 }
