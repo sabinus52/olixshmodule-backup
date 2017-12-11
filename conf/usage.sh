@@ -20,10 +20,27 @@ function olixmodule_backup_usage_main()
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}webapp ${CJAUNE}ACTION${CVOID}"
     echo
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
+    echo -e "${Cjaune} check     ${CVOID}  : Vérification des paramètres de sauvegarde"
     echo -e "${Cjaune} mysql     ${CVOID}  : Réalisation d'une sauvegarde des bases MySQL du serveur local"
     echo -e "${Cjaune} postgres  ${CVOID}  : Réalisation d'une sauvegarde des bases PostgeSQL du serveur local"
     echo -e "${Cjaune} folder    ${CVOID}  : Réalisation d'une sauvegarde de dossiers du serveur local"
     echo -e "${Cjaune} help      ${CVOID}  : Affiche cet écran"
+}
+
+
+###
+# Usage de l'action CHECK
+##
+function olixmodule_backup_usage_check()
+{
+    debug "olixmodule_backup_usage_check ()"
+    echo
+    echo -e "Vérification des paramètres de sauvegarde"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}check${CVOID} ${CBLANC}[OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    echo -en "${CBLANC} --conf="; String.pad "--conf=" 30 " "; echo " : Fichier de conf au format YML à vérifier (exemple res/example.yml)"
 }
 
 

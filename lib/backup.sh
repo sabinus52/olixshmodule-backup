@@ -7,21 +7,6 @@
 ##
 
 
-###
-# Vérifie le dossier de sauvegarde
-# @param $1 : Dossier à vérifier
-##
-function Backup.path.check()
-{
-    debug "Backup.path.check ($1)"
-    if [[ ! -d $1 ]]; then
-        warning "Création du dossier inexistant \"$1\""
-        mkdir $1 || critical "Impossible de créer le dossier \"$1\""
-    elif [[ ! -w $1 ]]; then
-        critical "Le dossier '$1' n'a pas les droits en écriture"
-    fi
-}
-
 
 ###
 # Fait une sauvegarde d'une base MySQL

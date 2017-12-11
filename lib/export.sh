@@ -8,35 +8,34 @@
 
 
 ###
-# Transfert le fichier backup vers un serveur FTP
+# Vérifie le mode de transfert
 ##
-function Backup.export.ftp()
+function Backup.Export.check()
 {
-    debug "Backup.export.ftp ()"
+    debug "Backup.Export.check ()"
 
-    Ftp.lftp.put "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS" \
-            "$OLIX_MODULE_BACKUP_EXPORT_PATH" "$OLIX_MODULE_BACKUP_INSTANCE_FILE"
-
-    return $?
+    [[ -z $OLIX_MODULE_BACKUP_EXPORT_MODE ]] && return 1
+    case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
+        ftp)
+            System.binary.exists lftp
+            [[ $? -eq 0 ]] && return 0 || return 201
+            ;;
+        ssh)
+            System.binary.exists scp
+            [[ $? -eq 0 ]] && return 0 || return 202
+            ;;
+        none|null|false)
+            return 1;;
+        *)
+            return 101;;
+    esac
 }
 
 
-###
-# Transfert le fichier backup vers un serveur SSH
-##
-function Backup.export.scp()
-{
-    debug "Backup.export.scp ()"
-    local PARAM
 
-    [[ -n $OLIX_MODULE_BACKUP_EXPORT_PASS ]] && PARAM="$PARAM -i $OLIX_MODULE_BACKUP_EXPORT_PASS"
 
-    debug "scp $PARAM $OLIX_MODULE_BACKUP_INSTANCE_FILE $OLIX_MODULE_BACKUP_EXPORT_USER@$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH"
-    if [[ $OLIX_OPTION_VERBOSE == true ]]; then
-        scp $PARAM "$OLIX_MODULE_BACKUP_INSTANCE_FILE" $OLIX_MODULE_BACKUP_EXPORT_USER@$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH 2>> ${OLIX_LOGGER_FILE_ERR}
-    else
-        scp $PARAM "$OLIX_MODULE_BACKUP_INSTANCE_FILE" $OLIX_MODULE_BACKUP_EXPORT_USER@$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH > /dev/null 2>> ${OLIX_LOGGER_FILE_ERR}
-    fi
 
-    return $?
-}
+
+
+
+

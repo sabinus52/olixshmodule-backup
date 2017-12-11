@@ -20,6 +20,10 @@ function olixmodule_backup_params_parse()
     shift
     while [[ $# -ge 1 ]]; do
         case $1 in
+            --conf=*)
+                IFS='=' read -ra PARAM <<< "$1"
+                OLIX_MODULE_BACKUP_CONFYML=${PARAM[1]}
+                ;;
             --allbases)
                 OLIX_MODULE_BACKUP_ALLBASES=true
                 ;;
@@ -76,6 +80,7 @@ function olixmodule_backup_params_get()
 ##
 function olixmodule_backup_params_debug ()
 {
+    debug "OLIX_MODULE_BACKUP_CONFYML=${OLIX_MODULE_BACKUP_CONFYML}"
     case $1 in
         mysql)
             debug "OLIX_MODULE_MYSQL_HOST=${OLIX_MODULE_MYSQL_HOST}"
