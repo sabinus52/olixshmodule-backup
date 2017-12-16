@@ -29,20 +29,27 @@ function olixmodule_backup_params_parse()
                 ;;
             --path=*)
                 IFS='=' read -ra PARAM <<< "$1"
-                OLIX_MODULE_BACKUP_PATH=${PARAM[1]}
+                OLIX_MODULE_BACKUP_REPOSITORY_ROOT=${PARAM[1]}
                 ;;
             --ttl=*)
                 IFS='=' read -ra PARAM <<< "$1"
-                OLIX_MODULE_BACKUP_TTL=${PARAM[1]}
+                OLIX_MODULE_BACKUP_ARCHIVE_TTL=${PARAM[1]}
                 ;;
             --gz|--bz2)
-                OLIX_MODULE_BACKUP_COMPRESS=${1/--/}
+                OLIX_MODULE_BACKUP_TARBALL_COMPRESS=${1/--/}
+                OLIX_MODULE_BACKUP_MYSQL_COMPRESS=${1/--/}
+                OLIX_MODULE_BACKUP_POSTGRES_COMPRESS=${1/--/}
                 ;;
             --noz)
-                OLIX_MODULE_BACKUP_COMPRESS="null"
+                OLIX_MODULE_BACKUP_TARBALL_COMPRESS="none"
+                OLIX_MODULE_BACKUP_MYSQL_COMPRESS="none"
+                OLIX_MODULE_BACKUP_POSTGRES_COMPRESS="none"
                 ;;
             --html)
-                OLIX_MODULE_BACKUP_REPORT="html"
+                OLIX_MODULE_BACKUP_REPORT_FORMAT="html"
+                ;;
+            --email)
+                OLIX_MODULE_BACKUP_REPORT_EMAIL=${1/--/}
                 ;;
             *)
                 olixmodule_backup_params_get "$ACTION" "$1"
@@ -89,6 +96,7 @@ function olixmodule_backup_params_debug ()
             debug "OLIX_MODULE_MYSQL_PASS=${OLIX_MODULE_MYSQL_PASS}"
             debug "OLIX_MODULE_BACKUP_BASES=${OLIX_MODULE_BACKUP_BASES}"
             debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
+            debug "OLIX_MODULE_BACKUP_MYSQL_COMPRESS=${OLIX_MODULE_BACKUP_MYSQL_COMPRESS}"
             ;;
         postgres)
             debug "OLIX_MODULE_POSTGRES_HOST=${OLIX_MODULE_POSTGRES_HOST}"
@@ -97,13 +105,15 @@ function olixmodule_backup_params_debug ()
             debug "OLIX_MODULE_POSTGRES_PASS=${OLIX_MODULE_POSTGRES_PASS}"
             debug "OLIX_MODULE_BACKUP_BASES=${OLIX_MODULE_BACKUP_BASES}"
             debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
+            debug "OLIX_MODULE_BACKUP_POSTGRES_COMPRESS=${OLIX_MODULE_BACKUP_POSTGRES_COMPRESS}"
             ;;
         folder)
             debug "OLIX_MODULE_BACKUP_FOLDERS=${OLIX_MODULE_BACKUP_FOLDERS}"
+            debug "OLIX_MODULE_BACKUP_TARBALL_COMPRESS=${OLIX_MODULE_BACKUP_TARBALL_COMPRESS}"
             ;;
     esac
-    debug "OLIX_MODULE_BACKUP_PATH=${OLIX_MODULE_BACKUP_PATH}"
-    debug "OLIX_MODULE_BACKUP_TTL=${OLIX_MODULE_BACKUP_TTL}"
-    debug "OLIX_MODULE_BACKUP_COMPRESS=${OLIX_MODULE_BACKUP_COMPRESS}"
-    debug "OLIX_MODULE_BACKUP_REPORT=${OLIX_MODULE_BACKUP_REPORT}"
+    debug "OLIX_MODULE_BACKUP_REPOSITORY_ROOT=${OLIX_MODULE_BACKUP_REPOSITORY_ROOT}"
+    debug "OLIX_MODULE_BACKUP_ARCHIVE_TTL=${OLIX_MODULE_BACKUP_ARCHIVE_TTL}"
+    debug "OLIX_MODULE_BACKUP_REPORT_FORMAT=${OLIX_MODULE_BACKUP_REPORT_FORMAT}"
+    debug "OLIX_MODULE_BACKUP_REPORT_EMAIL=${OLIX_MODULE_BACKUP_REPORT_EMAIL}"
 }
