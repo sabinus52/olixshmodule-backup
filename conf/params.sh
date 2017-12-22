@@ -63,6 +63,9 @@ function olixmodule_backup_params_parse()
         mysql)
             [[ -n $CMDPARAMS ]] && OLIX_MODULE_BACKUP_MYSQL_BASES="$CMDPARAMS"
             ;;
+        postgres)
+            [[ -n $CMDPARAMS ]] && OLIX_MODULE_BACKUP_POSTGRES_BASES="$CMDPARAMS"
+            ;;
         tarball)
             [[ -n $CMDPARAMS ]] && OLIX_MODULE_BACKUP_TARBALL_FOLDERS="$CMDPARAMS"
             ;;
@@ -110,7 +113,7 @@ function olixmodule_backup_params_debug ()
             debug "OLIX_MODULE_POSTGRES_PORT=${OLIX_MODULE_POSTGRES_PORT}"
             debug "OLIX_MODULE_POSTGRES_USER=${OLIX_MODULE_POSTGRES_USER}"
             debug "OLIX_MODULE_POSTGRES_PASS=${OLIX_MODULE_POSTGRES_PASS}"
-            debug "OLIX_MODULE_BACKUP_BASES=${OLIX_MODULE_BACKUP_BASES}"
+            debug "OLIX_MODULE_BACKUP_POSTGRES_BASES=${OLIX_MODULE_BACKUP_POSTGRES_BASES}"
             debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
             debug "OLIX_MODULE_BACKUP_POSTGRES_COMPRESS=${OLIX_MODULE_BACKUP_POSTGRES_COMPRESS}"
             ;;
