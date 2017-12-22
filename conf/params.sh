@@ -69,6 +69,9 @@ function olixmodule_backup_params_parse()
         tarball)
             [[ -n $CMDPARAMS ]] && OLIX_MODULE_BACKUP_TARBALL_FOLDERS="$CMDPARAMS"
             ;;
+        rsync)
+            [[ -n $CMDPARAMS ]] && OLIX_MODULE_BACKUP_RSYNC_FOLDERS="$CMDPARAMS"
+            ;;
     esac
 
     olixmodule_backup_params_debug $ACTION
@@ -120,6 +123,9 @@ function olixmodule_backup_params_debug ()
         tarball)
             debug "OLIX_MODULE_BACKUP_TARBALL_FOLDERS=${OLIX_MODULE_BACKUP_TARBALL_FOLDERS}"
             debug "OLIX_MODULE_BACKUP_TARBALL_COMPRESS=${OLIX_MODULE_BACKUP_TARBALL_COMPRESS}"
+            ;;
+        rsync)
+            debug "OLIX_MODULE_BACKUP_RSYNC_FOLDERS=${OLIX_MODULE_BACKUP_RSYNC_FOLDERS}"
             ;;
     esac
     debug "OLIX_MODULE_BACKUP_REPORT_FORMAT=${OLIX_MODULE_BACKUP_REPORT_FORMAT}"

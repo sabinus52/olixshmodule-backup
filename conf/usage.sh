@@ -22,7 +22,8 @@ function olixmodule_backup_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init      ${CVOID}  : Initialisation des paramètres de sauvegarde"
     echo -e "${Cjaune} check     ${CVOID}  : Vérification des paramètres de sauvegarde"
-    echo -e "${Cjaune} tarball   ${CVOID}  : Réalisation d'une sauvegarde de dossiers du serveur local"
+    echo -e "${Cjaune} tarball   ${CVOID}  : Réalisation d'une sauvegarde de dossiers en mode archive du serveur local"
+    echo -e "${Cjaune} rsync     ${CVOID}  : Réalisation d'une sauvegarde de dossiers en mode synchro du serveur local"
     echo -e "${Cjaune} mysql     ${CVOID}  : Réalisation d'une sauvegarde des bases MySQL du serveur local"
     echo -e "${Cjaune} postgres  ${CVOID}  : Réalisation d'une sauvegarde des bases PostgeSQL du serveur local"
     echo -e "${Cjaune} help      ${CVOID}  : Affiche cet écran"
@@ -68,9 +69,25 @@ function olixmodule_backup_usage_tarball()
 {
     debug "olixmodule_backup_usage_tarball ()"
     echo
-    echo -e "Réalisation d'une sauvegarde de dossiers du serveur local"
+    echo -e "Réalisation d'une sauvegarde de dossiers en mode archive du serveur local"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}tarball${CVOID} ${CBLANC}[folder1..folderN] [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    olixmodule_backup_usage_param
+}
+
+
+###
+# Usage de l'action RSYNC
+##
+function olixmodule_backup_usage_rsync()
+{
+    debug "olixmodule_backup_usage_rsync ()"
+    echo
+    echo -e "Réalisation d'une sauvegarde de dossiers en mode synchro du serveur local"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}rsync${CVOID} ${CBLANC}[folder1..folderN] [OPTIONS]${CVOID}"
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
     olixmodule_backup_usage_param
