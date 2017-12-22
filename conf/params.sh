@@ -16,6 +16,7 @@ function olixmodule_backup_params_parse()
     debug "olixmodule_backup_params_parse ($@)"
     local ACTION=$1
     local PARAM
+    local CMDPARAMS
 
     shift
     while [[ $# -ge 1 ]]; do
@@ -52,11 +53,20 @@ function olixmodule_backup_params_parse()
                 OLIX_MODULE_BACKUP_REPORT_EMAIL=${1/--/}
                 ;;
             *)
-                olixmodule_backup_params_get "$ACTION" "$1"
+                CMDPARAMS="$CMDPARAMS $1"
                 ;;
         esac
         shift
     done
+
+    case $ACTION in
+        mysql|postgres)
+            OLIX_MODULE_BACKUP_BASES="$OLIX_MODULE_BACKUP_BASES $2"
+            ;;
+        tarball)
+            [[ -n $CMDPARAMS ]] && OLIX_MODULE_BACKUP_TARBALL_FOLDERS="$CMDPARAMS"
+            ;;
+    esac
 
     olixmodule_backup_params_debug $ACTION
 }
@@ -71,12 +81,7 @@ function olixmodule_backup_params_parse()
 function olixmodule_backup_params_get()
 {
     case $1 in
-        mysql|postgres)
-            OLIX_MODULE_BACKUP_BASES="$OLIX_MODULE_BACKUP_BASES $2"
-            ;;
-        folder)
-            OLIX_MODULE_BACKUP_FOLDERS="$OLIX_MODULE_BACKUP_FOLDERS $2"
-            ;;
+        *) ;;
     esac
 }
 
@@ -88,6 +93,8 @@ function olixmodule_backup_params_get()
 function olixmodule_backup_params_debug ()
 {
     debug "OLIX_MODULE_BACKUP_CONFYML=${OLIX_MODULE_BACKUP_CONFYML}"
+    debug "OLIX_MODULE_BACKUP_REPOSITORY_ROOT=${OLIX_MODULE_BACKUP_REPOSITORY_ROOT}"
+    debug "OLIX_MODULE_BACKUP_ARCHIVE_TTL=${OLIX_MODULE_BACKUP_ARCHIVE_TTL}"
     case $1 in
         mysql)
             debug "OLIX_MODULE_MYSQL_HOST=${OLIX_MODULE_MYSQL_HOST}"
@@ -107,13 +114,11 @@ function olixmodule_backup_params_debug ()
             debug "OLIX_MODULE_BACKUP_ALLBASES=${OLIX_MODULE_BACKUP_ALLBASES}"
             debug "OLIX_MODULE_BACKUP_POSTGRES_COMPRESS=${OLIX_MODULE_BACKUP_POSTGRES_COMPRESS}"
             ;;
-        folder)
-            debug "OLIX_MODULE_BACKUP_FOLDERS=${OLIX_MODULE_BACKUP_FOLDERS}"
+        tarball)
+            debug "OLIX_MODULE_BACKUP_TARBALL_FOLDERS=${OLIX_MODULE_BACKUP_TARBALL_FOLDERS}"
             debug "OLIX_MODULE_BACKUP_TARBALL_COMPRESS=${OLIX_MODULE_BACKUP_TARBALL_COMPRESS}"
             ;;
     esac
-    debug "OLIX_MODULE_BACKUP_REPOSITORY_ROOT=${OLIX_MODULE_BACKUP_REPOSITORY_ROOT}"
-    debug "OLIX_MODULE_BACKUP_ARCHIVE_TTL=${OLIX_MODULE_BACKUP_ARCHIVE_TTL}"
     debug "OLIX_MODULE_BACKUP_REPORT_FORMAT=${OLIX_MODULE_BACKUP_REPORT_FORMAT}"
     debug "OLIX_MODULE_BACKUP_REPORT_EMAIL=${OLIX_MODULE_BACKUP_REPORT_EMAIL}"
 }

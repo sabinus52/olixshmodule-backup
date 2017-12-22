@@ -22,9 +22,9 @@ function olixmodule_backup_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init      ${CVOID}  : Initialisation des paramètres de sauvegarde"
     echo -e "${Cjaune} check     ${CVOID}  : Vérification des paramètres de sauvegarde"
+    echo -e "${Cjaune} tarball   ${CVOID}  : Réalisation d'une sauvegarde de dossiers du serveur local"
     echo -e "${Cjaune} mysql     ${CVOID}  : Réalisation d'une sauvegarde des bases MySQL du serveur local"
     echo -e "${Cjaune} postgres  ${CVOID}  : Réalisation d'une sauvegarde des bases PostgeSQL du serveur local"
-    echo -e "${Cjaune} folder    ${CVOID}  : Réalisation d'une sauvegarde de dossiers du serveur local"
     echo -e "${Cjaune} help      ${CVOID}  : Affiche cet écran"
 }
 
@@ -58,6 +58,22 @@ function olixmodule_backup_usage_check()
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
     echo -en "${CBLANC} --conf="; String.pad "--conf=" 30 " "; echo " : Fichier de conf au format YML à vérifier (exemple res/example.yml)"
+}
+
+
+###
+# Usage de l'action TARBALL
+##
+function olixmodule_backup_usage_tarball()
+{
+    debug "olixmodule_backup_usage_tarball ()"
+    echo
+    echo -e "Réalisation d'une sauvegarde de dossiers du serveur local"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}tarball${CVOID} ${CBLANC}[folder1..folderN] [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    olixmodule_backup_usage_param
 }
 
 
@@ -112,31 +128,15 @@ function olixmodule_backup_usage_postgres()
 
 
 ###
-# Usage de l'action FOLDER
-##
-function olixmodule_backup_usage_folder()
-{
-    debug "olixmodule_backup_usage_folder ()"
-    echo
-    echo -e "Réalisation d'une sauvegarde de dossiers du serveur local"
-    echo
-    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}folder${CVOID} ${CBLANC}[folder1..folderN] [OPTIONS]${CVOID}"
-    echo
-    echo -e "${Ccyan}OPTIONS${CVOID}"
-    olixmodule_backup_usage_param
-}
-
-
-###
 # Affiche les options des paramètres
 ##
 function olixmodule_backup_usage_param()
 {
-    echo -en "${CBLANC} --conf="; String.pad "--conf=" 30 " "; echo " : Fichier de conf au format YML à vérifier (exemple res/example.yml)"
+    echo -en "${CBLANC} --conf= ${CVOID}"; String.pad "--conf=" 30 " "; echo " : Fichier de conf au format YML à vérifier (exemple res/example.yml)"
     echo -en "${CBLANC} --path=$OLIX_MODULE_BACKUP_REPOSITORY_ROOT ${CVOID}"; String.pad "--path=$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" 30 " "; echo " : Chemin de stockage des backups"
     echo -en "${CBLANC} --ttl=$OLIX_MODULE_BACKUP_ARCHIVE_TTL ${CVOID}"; String.pad "--ttl=$OLIX_MODULE_BACKUP_ARCHIVE_TTL" 30 " "; echo " : Nombre de jours avant la purge des anciens backups"
     echo -en "${CBLANC} --gz|--bz2|--noz ${CVOID}"; String.pad "--gz|--bz2|--noz" 30 " "; echo " : Compression du dump au format gzip ou bzip2 ou pas de compression"
     echo -en "${CBLANC} --html ${CVOID}"; String.pad "--html" 30 " "; echo " : Rapport au format HTML sinon au format TEXT par défaut"
-    echo -en "${CBLANC} --email ${CVOID}"; String.pad "--email" 30 " "; echo " : Email d'envoi du rapport"
+    echo -en "${CBLANC} --email= ${CVOID}"; String.pad "--email=" 30 " "; echo " : Email d'envoi du rapport"
 }
 
