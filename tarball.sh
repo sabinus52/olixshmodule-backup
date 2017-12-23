@@ -1,5 +1,5 @@
 ###
-# Sauvegarde d'un dossier sur le serveur local
+# Sauvegarde d'un dossier sur le serveur local en mode tar
 # ==============================================================================
 # @package olixsh
 # @module backup
@@ -31,7 +31,7 @@ Backup.check.repository
 # Initialisation
 ##
 Report.initialize "$OLIX_MODULE_BACKUP_REPORT_FORMAT" \
-    "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "rapport-dump-tarball" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL" \
+    "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "rapport-backup-tarball" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL" \
     "$OLIX_MODULE_BACKUP_REPORT_EMAIL"
 
 Print.head1 "Sauvegarde des dossiers %s le %s à %s" "$HOSTNAME" "$OLIX_SYSTEM_DATE" "$OLIX_SYSTEM_TIME"

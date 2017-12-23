@@ -23,7 +23,7 @@ function Backup.Tarball.initialize()
 ##
 function Backup.Tarball.getTitle()
 {
-    echo -e "Sauvegarde du dossier %s"
+    echo -n "Sauvegarde du dossier %s"
 }
 
 
@@ -49,7 +49,7 @@ function Backup.Tarball.check()
 ##
 function Backup.Tarball.getPrefix()
 {
-    echo -e "backup-$(basename $OX_BACKUP_ITEM)-"
+    echo -n "backup-$(basename $OX_BACKUP_ITEM)-"
 }
 
 
@@ -58,7 +58,7 @@ function Backup.Tarball.getPrefix()
 ##
 function Backup.Tarball.getExtension()
 {
-    echo -e $(Compression.tar.extension $OX_BACKUP_ARCHIVE_COMPRESS)
+    echo -n $(Compression.tar.extension $OX_BACKUP_ARCHIVE_COMPRESS)
 }
 
 

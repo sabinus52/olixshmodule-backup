@@ -18,7 +18,7 @@
 ##
 __check_compress()
 {
-    Backup.Archive.check.compress $1
+    Backup.check.compress $1
     Print.check $? "$2"
     case $? in
           1) warning "Il est conseillé d'utiliser un moyen de compression";;
@@ -34,8 +34,8 @@ __check_compress()
 # Si Fichier de configuration
 ##
 if [[ -n $OLIX_MODULE_BACKUP_CONFYML ]]; then
-    Backup.ConfigYML.load $OLIX_MODULE_BACKUP_CONFYML || critical "Impossible de lire le fichier de conf \"$OLIX_MODULE_BACKUP_CONFYML\""
-    Backup.ConfigYML.setAll
+    Backup.yaml.load $OLIX_MODULE_BACKUP_CONFYML || critical "Impossible de lire le fichier de conf \"$OLIX_MODULE_BACKUP_CONFYML\""
+    Backup.yaml.setAll
 fi
 
 
@@ -47,7 +47,7 @@ Print.head2 "Test de la configuration"
 
 
 # Paramètre sur le dépôt
-Backup.Repository.check
+Backup.check.repository
 Print.check $? "Dossier de stockage ${Ccyan}$OLIX_MODULE_BACKUP_REPOSITORY_ROOT${CVOID}"
 case $? in
       1) warning "Création du dossier inexistant \"$OLIX_MODULE_BACKUP_REPOSITORY_ROOT\"";;
@@ -58,7 +58,7 @@ esac
 
 
 # Paramètre sur les archives
-Backup.Archive.check.purge
+Backup.check.ttl
 Print.check $? "Durée de rétention des sauvegardes ${Ccyan}$OLIX_MODULE_BACKUP_ARCHIVE_TTL${CVOID}"
 case $? in
     101) error "La valeur de la durée n'est pas un entier";;
@@ -67,7 +67,7 @@ esac
 
 # Liste des différentes méthodes de sauvegarde
 for METHOD in $OLIX_MODULE_BACKUP_METHOD; do
-    Backup.Method.check.exists $METHOD
+    Backup.check.method.exists $METHOD
     Print.check $? "Méthode de sauvegarde ${Ccyan}$METHOD${CVOID}"
     case $? in
         101) error "La methode \"$METHOD\" n'est pas disponible";;
@@ -80,49 +80,64 @@ for METHOD in $OLIX_MODULE_BACKUP_METHOD; do
 
         tarball)
             # Check TARBALL
-            Backup.Method.Tarball.initialize
-            Backup.Method.Tarball.check.folders
-            Print.check $? "Sauvegarde des dossiers ${Ccyan}$OLIX_MODULE_BACKUP_TARBALL_FOLDERS${CVOID}"
-            case $? in
-                  1) warning "Aucun dossier à sauvegarder";;
-                101) error "Un des dossier n'existe pas";;
-                102) error "Un des dossier ne peut être lu";;
-            esac
+            [[ -z $OLIX_MODULE_BACKUP_TARBALL_FOLDERS ]] && warning "Aucun dossier à sauvegarder"
+            for I in $OLIX_MODULE_BACKUP_TARBALL_FOLDERS; do
+                Backup.check.folder $I
+                Print.check $? "Sauvegarde du dossier ${Ccyan}$I${CVOID}"
+                case $? in
+                    101) error "Le dossier \"$I\" n'existe pas";;
+                    102) error "Le dossier \"$I\" ne peut être lu";;
+                esac
+            done
             __check_compress "$OLIX_MODULE_BACKUP_TARBALL_COMPRESS" "Compression des archives de dossiers au format ${Ccyan}$OLIX_MODULE_BACKUP_TARBALL_COMPRESS${CVOID}"
+            ;;
+
+        rsync)
+            # Check RSYNC
+            [[ -z $OLIX_MODULE_BACKUP_RSYNC_FOLDERS ]] && warning "Aucun dossier à sauvegarder"
+            for I in $OLIX_MODULE_BACKUP_RSYNC_FOLDERS; do
+                Backup.check.folder $I
+                Print.check $? "Sauvegarde du dossier ${Ccyan}$I${CVOID}"
+                case $? in
+                    101) error "Le dossier \"$I\" n'existe pas";;
+                    102) error "Le dossier \"$I\" ne peut être lu";;
+                esac
+            done
             ;;
 
         mysql)
             # Check MYSQL
-            Backup.Method.Mysql.initialize
-            Backup.Method.Mysql.check.server
+            Backup.Mysql.initialize
+            Backup.check.sgbd 'Mysql'
             Print.check $? "Test de la connexion au serveur MySQL ${Ccyan}$OLIX_MODULE_MYSQL_USER@$OLIX_MODULE_MYSQL_HOST${CVOID}"
-            if [[ $OLIX_MODULE_BACKUP_MYSQL_BASES == "__ALL__" ]]; then
-                OLIX_MODULE_BACKUP_MYSQL_BASES=$(Mysql.server.databases)
-            fi
-            Backup.Method.Mysql.check.bases
-            Print.check $? "Sauvegarde des bases MySQL ${Ccyan}$OLIX_MODULE_BACKUP_MYSQL_BASES${CVOID}"
-            case $? in
-                  1) warning "Aucune base MySQL à sauvegarder";;
-                101) error "Une des bases MySQL n'existe pas";;
-            esac
+            [[ $OLIX_MODULE_BACKUP_MYSQL_BASES == "_ALL_" ]] && OLIX_MODULE_BACKUP_MYSQL_BASES=$(Mysql.server.databases)
+
+            [[ -z $OLIX_MODULE_BACKUP_MYSQL_BASES ]] && warning "Aucune base MySQL à sauvegarder"
+            for I in $OLIX_MODULE_BACKUP_MYSQL_BASES; do
+                Backup.check.base 'Mysql' $I
+                Print.check $? "Sauvegarde de la base ${Ccyan}$I${CVOID}"
+                case $? in
+                    101) error "Le base \"$I\" n'existe pas";;
+                esac
+            done
             __check_compress "$OLIX_MODULE_BACKUP_MYSQL_COMPRESS" "Compression des dump MySQL au format ${Ccyan}$OLIX_MODULE_BACKUP_MYSQL_COMPRESS${CVOID}"
             ;;
 
         postgres)
             # Check POSTGRESQL
-            Backup.Method.Postgres.initialize
-            Backup.Method.Postgres.check.server
+            Backup.Postgres.initialize
+            Backup.check.sgbd 'Postgres'
             Print.check $? "Test de la connexion au serveur PostgreSQL ${Ccyan}$OLIX_MODULE_POSTGRES_USER@$OLIX_MODULE_POSTGRES_HOST${CVOID}"
+            [[ $OLIX_MODULE_BACKUP_POSTGRES_BASES == "_ALL_" ]] && OLIX_MODULE_BACKUP_POSTGRES_BASES=$(Postgres.server.databases)
 
-            if [[ $OLIX_MODULE_BACKUP_POSTGRES_BASES == "__ALL__" ]]; then
-                OLIX_MODULE_BACKUP_POSTGRES_BASES=$(Postgres.server.databases)
-            fi
-            Backup.Method.Postgres.check.bases
-            Print.check $? "Sauvegarde des bases PostgreSQL ${Ccyan}$OLIX_MODULE_BACKUP_POSTGRES_BASES${CVOID}"
-            case $? in
-                  1) warning "Aucune base PostgreSQL à sauvegarder";;
-                101) error "Une des bases PostgreSQL n'existe pas";;
-            esac
+            [[ -z $OLIX_MODULE_BACKUP_POSTGRES_BASES ]] && warning "Aucune base PostgreSQL à sauvegarder"
+            for I in $OLIX_MODULE_BACKUP_POSTGRES_BASES; do
+                Backup.check.base 'Postgres' $I
+                Print.check $? "Sauvegarde de la base ${Ccyan}$I${CVOID}"
+                case $? in
+                    101) error "Le base \"$I\" n'existe pas";;
+                esac
+            done
             __check_compress "$OLIX_MODULE_BACKUP_POSTGRES_COMPRESS" "Compression des dump PostgreSQL au format ${Ccyan}$OLIX_MODULE_BACKUP_POSTGRES_COMPRESS${CVOID}"
             ;;
 
@@ -131,7 +146,7 @@ done
 
 
 # Paramètre de transfert
-Backup.Export.check
+Backup.check.export
 __EXPORT=$?
 Print.check $__EXPORT "Mode de transfert des sauvegardes ${Ccyan}$OLIX_MODULE_BACKUP_EXPORT_MODE${CVOID}"
 case $? in
@@ -145,35 +160,32 @@ if [[ $__EXPORT -eq 0 ]]; then
     case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
 
         ssh)
-            Backup.Export.SSH.check.connect
+            Scp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
+            Backup.check.export.connect 'Scp'
             Print.check $? "Connexion au serveur ${Ccyan}$OLIX_MODULE_BACKUP_EXPORT_HOST${CVOID}"
             case $? in
                 101) error "Impossible de se connecter au serveur \"$OLIX_MODULE_BACKUP_EXPORT_HOST\"";;
             esac
-            Backup.Export.SSH.check.directory
+            Backup.check.export.directory 'Scp'
             Print.check $? "Dossier de stockage distant ${Ccyan}$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH${CVOID}"
             case $? in
                 101) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'est pas accessible en écriture";;
-                102) error "Impossible de tester le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\"";;
-                103) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'est pas un répertoire";;
-                104) error "Impossible de tester le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\"";;
-                105) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'existe pas ou est inaccessible";;
-                106) error "Impossible de tester le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\"";;
+                102) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'existe pas ou est inaccessible";;
             esac
             ;;
 
         ftp)
             Ftp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
-            Backup.Export.FTP.check.connect
+            Backup.check.export.connect 'Ftp'
             Print.check $? "Connexion au serveur ${Ccyan}$OLIX_MODULE_BACKUP_EXPORT_HOST${CVOID}"
             case $? in
                 101) error "Impossible de se connecter au serveur \"$OLIX_MODULE_BACKUP_EXPORT_HOST\"";;
             esac
-            Backup.Export.FTP.check.directory
+            Backup.check.export.directory 'Ftp'
             Print.check $? "Dossier de stockage distant ${Ccyan}$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH${CVOID}"
             case $? in
                 101) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'est pas accessible en écriture";;
-                105) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'existe pas ou est inaccessible";;
+                102) error "Le dossier distant \"$OLIX_MODULE_BACKUP_EXPORT_HOST:$OLIX_MODULE_BACKUP_EXPORT_PATH\" n'existe pas ou est inaccessible";;
             esac
             ;;
     esac
@@ -181,13 +193,13 @@ fi
 
 
 # Paramètre du rapport
-Backup.Report.check.format
+Backup.check.report.format
 Print.check $? "Format de sortie du rapport ${Ccyan}$OLIX_MODULE_BACKUP_REPORT_FORMAT${CVOID}"
 case $? in
     101) error "Le format de rapport \"${OLIX_MODULE_BACKUP_REPORT_FORMAT}\" est inconnu";;
 esac
 
-Backup.Report.check.email
+Backup.check.report.email
 Print.check $? "Email d'envoi des rapports ${Ccyan}$OLIX_MODULE_BACKUP_REPORT_EMAIL${CVOID}"
 case $? in
     1) warning "Pas d'email renseigné";;

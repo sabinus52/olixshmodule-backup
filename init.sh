@@ -29,11 +29,11 @@ if [[ -n $OLIX_MODULE_BACKUP_CONFYML ]]; then
     fi
 
     # Récupère les paramètres du YML
-    Backup.ConfigYML.load $OLIX_MODULE_BACKUP_CONFYML || critical "Impossible de lire le fichier de conf \"$OLIX_MODULE_BACKUP_CONFYML\""
+    Backup.yaml.load $OLIX_MODULE_BACKUP_CONFYML || critical "Impossible de lire le fichier de conf \"$OLIX_MODULE_BACKUP_CONFYML\""
 
     # Pour chaque paramètre, on affecte la valeur contenue dans le YML
     for I in $(Config.parameters 'backup'); do
-        VALUE=$(Backup.ConfigYML.getParam $I)
+        VALUE=$(Backup.yaml.getParam $I)
         Config.param.set 'backup' $I "$VALUE"
     done
 
