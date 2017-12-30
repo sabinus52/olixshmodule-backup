@@ -33,29 +33,11 @@ function Backup.Archive.get()
 
 
 ###
-# Retourne le nombre d'archives courantes
-##
-function Backup.Archive.count()
-{
-    echo -n "$(find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow | wc -l)"
-}
-
-
-###
 # Retourne la liste des archives courantes
 ##
 function Backup.Archive.list()
 {
-    echo -n "$(find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -printf "%f\n" | sort)"   
-}
-
-
-###
-# Retourne le nombre d'archives qui peuvent être purgées
-##
-function Backup.Archive.purged.count()
-{
-    echo -n "$(find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL | wc -l)"
+    find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -printf "%f\n" | sort
 }
 
 
@@ -64,7 +46,7 @@ function Backup.Archive.purged.count()
 ##
 function Backup.Archive.purged.list()
 {
-    echo -n "$(find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL -printf "%f\n" | sort)"
+    find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL -printf "%f\n" | sort
 }
 
 
@@ -76,6 +58,6 @@ function Backup.Archive.purge()
     debug "Backup.Archive.purge ()"
 
     debug "find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name '$OX_BACKUP_ARCHIVE_PREFIX*' -follow -mmin +$OX_BACKUP_ARCHIVE_TTL"
-    find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL -delete 2> ${OLIX_LOGGER_FILE_ERR}
+    find $OX_BACKUP_PATH -mindepth 1 -maxdepth 1 -name "$OX_BACKUP_ARCHIVE_PREFIX*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL -exec rm -rf {} \; 2> ${OLIX_LOGGER_FILE_ERR}
     return $?
 }

@@ -136,16 +136,33 @@ function Backup.export()
 function Backup.purge()
 {
     debug "Backup.purge ()"
-    local RET
+    local ARCHIVES RET I
 
-    Print.value "Purge des anciennes sauvegardes" "$(Backup.Archive.purged.count)"
-    Print.list "$(Backup.Archive.purged.list)"
+    ARCHIVES=( $(Backup.Archive.purged.list) )
+    Print.value "Purge des anciennes sauvegardes" "$(Array.count 'ARCHIVES')"
+    Print.list "$(Array.all 'ARCHIVES')"
 
+    # Purge des fichiers distants
+    case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
+        ftp)
+            for I in $(Array.all 'ARCHIVES'); do
+                Ftp.remove "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
+            done
+            ;;
+        ssh)
+            for I in $(Array.all 'ARCHIVES'); do
+                Scp.remove "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
+            done
+            ;;
+    esac
+
+    # Purge locale
     Backup.Archive.purge
     RET=$?
 
-    Print.value "Liste des sauvegardes restantes" "$(Backup.Archive.count)"
-    Print.list "$(Backup.Archive.list)"
+    ARCHIVES=( $(Backup.Archive.list) )
+    Print.value "Liste des sauvegardes restantes" "$(Array.count 'ARCHIVES')"
+    Print.list "$(Array.all 'ARCHIVES')"
 
     [[ $RET -ne 0 ]] && error && return 1
     return 0
