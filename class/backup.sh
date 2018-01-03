@@ -25,6 +25,8 @@ OX_BACKUP_CHRONO_START=
 OX_BACKUP_CHRONO_STOP=
 # Element à sauvegarder
 OX_BACKUP_ITEM=
+# Element à exclure
+OX_BACKUP_EXCLUDE=
 
 
 ###
@@ -55,11 +57,13 @@ function Backup.initialize()
 ###
 # Fait la sauvegarde d'un élément
 # @param $1 : Element à sauvegarder
+# @param $2 : Exclusion
 ##
 function Backup.doBackup()
 {
-    debug "Backup.doBackup ($1)"
+    debug "Backup.doBackup ($1, $2)"
     OX_BACKUP_ITEM=$1
+    OX_BACKUP_EXCLUDE=$2
 
     Print.head2 "$(Backup.$OX_BACKUP_METHOD.getTitle)" "$OX_BACKUP_ITEM"
 
@@ -102,6 +106,8 @@ function Backup.export()
     debug "Backup.export ()"
     local RET
     OX_BACKUP_CHRONO_START=$SECONDS
+
+    [[ $OX_BACKUP_METHOD == 'Rsync' ]] && return 0
 
     case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
         ftp)

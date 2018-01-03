@@ -68,7 +68,22 @@ function Backup.Tarball.getExtension()
 function Backup.Tarball.doBackup()
 {
     debug "Backup.Tarball.doBackup()"
+    local PWDTMP PARAM RET I
 
-    Compression.tar.create "$OX_BACKUP_ITEM" "$OX_BACKUP_ARCHIVE" "" "$(Compression.tar.mode $OX_BACKUP_ARCHIVE_COMPRESS)"
+    PWDTMP=$(pwd)
+    cd $OX_BACKUP_ITEM 2> ${OLIX_LOGGER_FILE_ERR}
+    [[ $? -ne 0 ]] && cd $PWDTMP && return 1
+
+    [[ $OLIX_OPTION_VERBOSE == true ]] && PARAM="--verbose"
+    PARAM="$PARAM $(Compression.tar.mode $OX_BACKUP_ARCHIVE_COMPRESS)"
+    for I in $OX_BACKUP_EXCLUDE; do
+        PARAM="$PARAM --exclude=$I"
+    done
+
+    debug "tar --create --ignore-failed-read $PARAM --file $OX_BACKUP_ARCHIVE ."
+    tar --create --ignore-failed-read $PARAM --file $OX_BACKUP_ARCHIVE . 2> ${OLIX_LOGGER_FILE_ERR}
+    RET=$?
+
+    cd $PWDTMP
     return $?
 }

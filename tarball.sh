@@ -43,7 +43,7 @@ Print.head1 "Sauvegarde des dossiers %s le %s à %s" "$HOSTNAME" "$OLIX_SYSTEM_D
 for FOLDER in $OLIX_MODULE_BACKUP_TARBALL_FOLDERS; do
     info "Sauvegarde du dossier '$FOLDER'"
     Backup.Tarball.initialize
-    Backup.doBackup "$FOLDER"
+    Backup.doBackup "$FOLDER" "$OLIX_MODULE_BACKUP_TARBALL_EXCLUDE"
     [[ $? -ne 0 ]] && error && IS_ERROR=true
 done
 

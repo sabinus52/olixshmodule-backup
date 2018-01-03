@@ -42,6 +42,21 @@ function Backup.Archive.list()
 
 
 ###
+# Retourne la dernière archive
+##
+function Backup.Archive.last()
+{
+    local LIST_ARCHIVES LASTDIR
+    LIST_ARCHIVES=( $(Backup.Archive.list) )
+    if (( $(Array.count 'LIST_ARCHIVES') > 0 )); then
+        LASTDIR=$OX_BACKUP_PATH/$(Array.last 'LIST_ARCHIVES')
+        Directory.exists "${LASTDIR%/}" && echo ${LASTDIR%/}
+    fi
+    echo ''
+}
+
+
+###
 # Retourne la liste des archives qui peuvent être purgées
 ##
 function Backup.Archive.purged.list()
