@@ -9,17 +9,21 @@
 
 ###
 # Initialise la méthode de sauvegarde des bases
+# @param $1 : Compression
 ##
 function Backup.Mysql.initialize()
 {
-    debug "Backup.Mysql.initialize ()"
+    debug "Backup.Mysql.initialize ($1)"
 
     [[ -z $OLIX_MODULE_BACKUP_MYSQL_USER ]] && OLIX_MODULE_BACKUP_MYSQL_USER=$OLIX_MODULE_MYSQL_USER
     [[ -z $OLIX_MODULE_BACKUP_MYSQL_PASS ]] && OLIX_MODULE_BACKUP_MYSQL_PASS=$OLIX_MODULE_MYSQL_PASS
     OLIX_MODULE_MYSQL_USER=$OLIX_MODULE_BACKUP_MYSQL_USER
     OLIX_MODULE_MYSQL_PASS=$OLIX_MODULE_BACKUP_MYSQL_PASS
 
-    Backup.initialize "Mysql" "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "$OLIX_MODULE_BACKUP_MYSQL_COMPRESS" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+    OX_BACKUP_METHOD="Mysql"
+    OX_BACKUP_ARCHIVE_COMPRESS=$1
+    Backup.repository.create
+    return $?
 }
 
 
@@ -71,8 +75,31 @@ function Backup.Mysql.getExtension()
 ##
 function Backup.Mysql.doBackup()
 {
-    debug "Backup.Mysql.doBackup()"
+    debug "Backup.Mysql.doBackup ()"
 
     Mysql.base.backup "$OX_BACKUP_ITEM" "$OX_BACKUP_ARCHIVE" "$OX_BACKUP_ARCHIVE_COMPRESS"
     return $?
+}
+
+###
+# Transfert du fichier de backup sur un serveur distant
+# @param $1 : Méthode de transfert
+# @param $2 : Emplacement sur le serveur distant
+##
+function Backup.Mysql.export()
+{
+    debug "Backup.Mysql.export ($1, $2)"
+
+    case $(String.lower $1) in
+        ftp)
+            Ftp.put "$OX_BACKUP_ARCHIVE" "$2"
+            return $?
+            ;;
+        ssh)
+            Scp.put "$OX_BACKUP_ARCHIVE" "$2"
+            return $?
+            ;;
+    esac
+
+    return 0
 }

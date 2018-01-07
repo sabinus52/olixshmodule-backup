@@ -9,12 +9,16 @@
 
 ###
 # Initialise la méthode de sauvegarde des archives
+# @param $1 : Compression
 ##
 function Backup.Rsync.initialize()
 {
-    debug "Backup.Rsync.initialize ()"
+    debug "Backup.Rsync.initialize ($1)"
 
-    Backup.initialize "Rsync" "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "none" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+    OX_BACKUP_METHOD="Rsync"
+    OX_BACKUP_ARCHIVE_COMPRESS="none"
+    Backup.repository.create
+    return $?
 }
 
 
@@ -71,15 +75,72 @@ function Backup.Rsync.doBackup()
 
     local PARAM I LAST_ARCHIVE
 
-    LAST_ARCHIVE=$(Backup.Archive.last)
-
     [[ $OLIX_OPTION_VERBOSE == true ]] && PARAM="$PARAM --verbose" || PARAM="$PARAM --quiet"
     for I in $OX_BACKUP_EXCLUDE; do
         PARAM="$PARAM --exclude=$I"
     done
 
-    #echo "rsync -a $PARAM --delete-excluded --link-dest=$LAST_ARCHIVE -- "$OX_BACKUP_ITEM/" "$OX_BACKUP_ARCHIVE/""
-    rsync -a $PARAM --delete-excluded --link-dest=$LAST_ARCHIVE -- "$OX_BACKUP_ITEM/" "$OX_BACKUP_ARCHIVE/"
+    LAST_ARCHIVE=$(Backup.Rsync.archive.last)
+    [[ -n $LAST_ARCHIVE ]] && PARAM="$PARAM --link-dest=$LAST_ARCHIVE"
+
+    debug "rsync -a --delete-excluded $PARAM  -- "$OX_BACKUP_ITEM/" "$OX_BACKUP_ARCHIVE/""
+    rsync -a --delete-excluded  $PARAM -- "$OX_BACKUP_ITEM/" "$OX_BACKUP_ARCHIVE/"
 
     return $?
+}
+
+
+###
+# Transfert du fichier de backup sur un serveur distant
+# @param $1 : Méthode de transfert
+# @param $2 : Emplacement sur le serveur distant
+##
+function Backup.Rsync.export()
+{
+    debug "Backup.Rsync.export ($1, $2)"
+    local TARGET PARAM LASTDIR LIST_ARCHIVES
+
+    case $(String.lower $1) in
+        ftp)
+            return 1
+            ;;
+        ssh)
+            # Dernière archive sur le serveur distant
+            LIST_ARCHIVES=( $(ssh -n -- "$(Scp.getConnection)" "find "$OLIX_MODULE_BACKUP_EXPORT_PATH" -mindepth 1 -maxdepth 2 -name '$OX_BACKUP_ARCHIVE_PREFIX*.$(Backup.Rsync.getExtension)' -type d -print | sort") )
+            if (( $(Array.count 'LIST_ARCHIVES') > 0 )); then
+                LASTDIR=$(Array.last 'LIST_ARCHIVES')
+                ! Scp.check.directory "$LASTDIR" && LASTDIR=""
+            fi
+
+            # Paramètre du serveur distant
+            TARGET="$(Scp.getConnection):$OLIX_MODULE_BACKUP_EXPORT_PATH/$BASEPATH/$(basename $OX_BACKUP_ARCHIVE)/"
+            PARAM=$(Scp.getParam)
+            [[ $OLIX_OPTION_VERBOSE == true ]] && PARAM="$PARAM --verbose" || PARAM="$PARAM --quiet"
+            for I in $OX_BACKUP_EXCLUDE; do
+                PARAM="$PARAM --exclude=$I"
+            done
+            [[ -n $LASTDIR ]] && PARAM="$PARAM --link-dest=$LASTDIR"
+
+            debug "rsync -e "ssh -o Compression=no" -za --delete-excluded $PARAM -- "$OX_BACKUP_ITEM/" "$TARGET""
+            rsync -e "ssh -o Compression=no" -za --delete-excluded $PARAM -- "$OX_BACKUP_ITEM/" "$TARGET"
+            return $?
+            ;;
+    esac
+
+    return 0
+}
+
+
+###
+# Retourne la dernière archive sauvegardé
+##
+function Backup.Rsync.archive.last()
+{
+    local LIST_ARCHIVES LASTDIR
+    LIST_ARCHIVES=( $(Backup.Archive.list "$OX_BACKUP_ARCHIVE_PREFIX*.$(Backup.Rsync.getExtension)") )
+    if (( $(Array.count 'LIST_ARCHIVES') > 0 )); then
+        LASTDIR=$(Array.last 'LIST_ARCHIVES')
+        Directory.exists "${LASTDIR%/}" && echo ${LASTDIR%/}
+    fi
+    echo ''
 }

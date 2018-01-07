@@ -30,8 +30,11 @@ Backup.check.repository
 ###
 # Initialisation
 ##
+Backup.initialize "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "$OLIX_MODULE_BACKUP_TARBALL_COMPRESS" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+[[ $? -ne 0 ]] && critical "Impossible d'initialiser la sauvegarde"
+
 Report.initialize "$OLIX_MODULE_BACKUP_REPORT_FORMAT" \
-    "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "rapport-backup-rsync" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL" \
+    "$(Backup.repository.get)" "rapport-backup-rsync" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL" \
     "$OLIX_MODULE_BACKUP_REPORT_EMAIL"
 
 Print.head1 "Sauvegarde des dossiers %s le %s à %s" "$HOSTNAME" "$OLIX_SYSTEM_DATE" "$OLIX_SYSTEM_TIME"
@@ -40,10 +43,10 @@ Print.head1 "Sauvegarde des dossiers %s le %s à %s" "$HOSTNAME" "$OLIX_SYSTEM_D
 ###
 # Traitement
 ##
+Backup.Rsync.initialize
 for FOLDER in $OLIX_MODULE_BACKUP_RSYNC_FOLDERS; do
     info "Sauvegarde du dossier '$FOLDER'"
-    Backup.Rsync.initialize
-    Backup.doBackup "$FOLDER" "$OLIX_MODULE_BACKUP_RSYNC_EXCLUDE"
+    Backup.Archive.doBackup "$FOLDER" "$OLIX_MODULE_BACKUP_RSYNC_EXCLUDE"
     [[ $? -ne 0 ]] && error && IS_ERROR=true
 done
 

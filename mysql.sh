@@ -34,8 +34,11 @@ Backup.check.repository
 ###
 # Initialisation
 ##
+Backup.initialize "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+[[ $? -ne 0 ]] && critical "Impossible d'initialiser la sauvegarde"
+
 Report.initialize "$OLIX_MODULE_BACKUP_REPORT_FORMAT" \
-    "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "rapport-dump-mysql" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL" \
+    "$(Backup.repository.get)" "rapport-dump-mysql" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL" \
     "$OLIX_MODULE_BACKUP_REPORT_EMAIL"
 
 Print.head1 "Sauvegarde des bases MySQL %s le %s à %s" "$HOSTNAME" "$OLIX_SYSTEM_DATE" "$OLIX_SYSTEM_TIME"
@@ -44,10 +47,10 @@ Print.head1 "Sauvegarde des bases MySQL %s le %s à %s" "$HOSTNAME" "$OLIX_SYSTE
 ###
 # Traitement
 ##
+Backup.Mysql.initialize "$OLIX_MODULE_BACKUP_MYSQL_COMPRESS"
 for BASE in $OLIX_MODULE_BACKUP_MYSQL_BASES; do
     info "Sauvegarde de la base '$BASE'"
-    Backup.Mysql.initialize
-    Backup.doBackup "$BASE"
+    Backup.Archive.doBackup "$BASE"
     [[ $? -ne 0 ]] && error && IS_ERROR=true
 done
 

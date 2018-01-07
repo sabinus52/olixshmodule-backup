@@ -22,10 +22,12 @@ function olixmodule_backup_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init      ${CVOID}  : Initialisation des paramètres de sauvegarde"
     echo -e "${Cjaune} check     ${CVOID}  : Vérification des paramètres de sauvegarde"
+    echo -e "${Cjaune} complete  ${CVOID}  : Réalisation d'une sauvegarde complète du serveur local"
     echo -e "${Cjaune} tarball   ${CVOID}  : Réalisation d'une sauvegarde de dossiers en mode archive du serveur local"
     echo -e "${Cjaune} rsync     ${CVOID}  : Réalisation d'une sauvegarde de dossiers en mode synchro du serveur local"
     echo -e "${Cjaune} mysql     ${CVOID}  : Réalisation d'une sauvegarde des bases MySQL du serveur local"
     echo -e "${Cjaune} postgres  ${CVOID}  : Réalisation d'une sauvegarde des bases PostgeSQL du serveur local"
+    echo -e "${Cjaune} purge     ${CVOID}  : Purge des anciennes sauvegardes"
     echo -e "${Cjaune} help      ${CVOID}  : Affiche cet écran"
 }
 
@@ -59,6 +61,22 @@ function olixmodule_backup_usage_check()
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
     echo -en "${CBLANC} --conf="; String.pad "--conf=" 30 " "; echo " : Fichier de conf au format YML à vérifier (exemple res/example.yml)"
+}
+
+
+###
+# Usage de l'action COMPLETE
+##
+function olixmodule_backup_usage_complete()
+{
+    debug "olixmodule_backup_usage_complete ()"
+    echo
+    echo -e "Réalisation d'une sauvegarde complète du serveur local"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}complete${CVOID} ${CBLANC}[OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    olixmodule_backup_usage_param
 }
 
 
@@ -141,6 +159,21 @@ function olixmodule_backup_usage_postgres()
     for I in $(Postgres.server.databases); do
         Print.usage.item "$I" "Base de de données $I" 15
     done
+}
+
+
+###
+# Usage de l'action PURGE
+##
+function olixmodule_backup_usage_purge()
+{
+    debug "olixmodule_backup_usage_purge ()"
+    echo
+    echo -e "Purge des anciennes sauvegardes"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename $OLIX_ROOT_SCRIPT) ${CVERT}backup ${CJAUNE}purge${CVOID} ${CBLANC}[OPTIONS]${CVOID}"
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    echo -en "${CBLANC} --ttl=$OLIX_MODULE_BACKUP_ARCHIVE_TTL ${CVOID}"; String.pad "--ttl=$OLIX_MODULE_BACKUP_ARCHIVE_TTL" 30 " "; echo " : Nombre de jours avant la purge des anciens backups"
 }
 
 

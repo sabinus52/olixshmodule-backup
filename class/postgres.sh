@@ -9,17 +9,21 @@
 
 ###
 # Initialise la méthode de sauvegarde des bases
+# @param $1 : Compression
 ##
 function Backup.Postgres.initialize()
 {
-    debug "Backup.Postgres.initialize ()"
+    debug "Backup.Postgres.initialize ($1)"
 
     [[ -z $OLIX_MODULE_BACKUP_POSTGRES_USER ]] && OLIX_MODULE_BACKUP_POSTGRES_USER=$OLIX_MODULE_POSTGRES_USER
     [[ -z $OLIX_MODULE_BACKUP_POSTGRES_PASS ]] && OLIX_MODULE_BACKUP_POSTGRES_PASS=$OLIX_MODULE_POSTGRES_PASS
     OLIX_MODULE_POSTGRES_USER=$OLIX_MODULE_BACKUP_POSTGRES_USER
     OLIX_MODULE_POSTGRES_PASS=$OLIX_MODULE_BACKUP_POSTGRES_PASS
 
-    Backup.initialize "Postgres" "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "$OLIX_MODULE_BACKUP_POSTGRES_COMPRESS" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+    OX_BACKUP_METHOD="Postgres"
+    OX_BACKUP_ARCHIVE_COMPRESS=$1
+    Backup.repository.create
+    return $?
 }
 
 
@@ -78,4 +82,28 @@ function Backup.Postgres.doBackup()
 
     Postgres.base.backup "$OX_BACKUP_ITEM" "$OX_BACKUP_ARCHIVE" $FORMAT "$OX_BACKUP_ARCHIVE_COMPRESS"
     return $?
+}
+
+
+###
+# Transfert du fichier de backup sur un serveur distant
+# @param $1 : Méthode de transfert
+# @param $2 : Emplacement sur le serveur distant
+##
+function Backup.Postgres.export()
+{
+    debug "Backup.Postgres.export ($1, $2)"
+
+    case $(String.lower $1) in
+        ftp)
+            Ftp.put "$OX_BACKUP_ARCHIVE" "$2"
+            return $?
+            ;;
+        ssh)
+            Scp.put "$OX_BACKUP_ARCHIVE" "$2"
+            return $?
+            ;;
+    esac
+
+    return 0
 }

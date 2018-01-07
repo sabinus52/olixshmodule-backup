@@ -9,6 +9,8 @@
 
 # Méthode de sauvegarde
 OX_BACKUP_METHOD=
+# Dossier racine de sauvegarde
+OX_BACKUP_ROOT="/tmp"
 # Dossier de sauvegarde
 OX_BACKUP_PATH="/tmp"
 # Chemin complet de l'archive
@@ -31,108 +33,72 @@ OX_BACKUP_EXCLUDE=
 
 ###
 # Initialisation de l'objet BACKUP
-# @param $1 : Méthode de sauvegarde
-# @param $2 : Emplacement du backup
-# @param $3 : Compression
-# @param $4 : Rétention pour la purge
+# @param $1 : Emplacement du backup
+# @param $2 : Rétention pour la purge
 ##
 function Backup.initialize()
 {
-    debug "Backup.initialize ($1, $2, $3, $4)"
+    debug "Backup.initialize ($1, $2)"
 
     OX_BACKUP_CHRONO_START=$SECONDS
     OX_BACKUP_CHRONO_STOP=
 
     [[ -z $1 ]] && critical "Paramètre manquant dans Backup.initialize"
-    OX_BACKUP_METHOD=$1
+    OX_BACKUP_ROOT=$1
     [[ -z $2 ]] && critical "Paramètre manquant dans Backup.initialize"
-    OX_BACKUP_PATH=$2
-    [[ -z $3 ]] && critical "Paramètre manquant dans Backup.initialize"
-    OX_BACKUP_ARCHIVE_COMPRESS=$3
-    [[ -z $4 ]] && critical "Paramètre manquant dans Backup.initialize"
-    OX_BACKUP_ARCHIVE_TTL=$4
+    OX_BACKUP_ARCHIVE_TTL=$2
+
+    OX_BACKUP_PATH="$OX_BACKUP_ROOT/$OLIX_SYSTEM_DATE.$(date '+%H%M%S')"
 }
 
 
 ###
-# Fait la sauvegarde d'un élément
-# @param $1 : Element à sauvegarder
-# @param $2 : Exclusion
+# Crée le dossier de sauvegarde du jour contenant les fichiers sauvegardés
 ##
-function Backup.doBackup()
+function Backup.repository.create()
 {
-    debug "Backup.doBackup ($1, $2)"
-    OX_BACKUP_ITEM=$1
-    OX_BACKUP_EXCLUDE=$2
+    debug "Backup.repository.create ()"
 
-    Print.head2 "$(Backup.$OX_BACKUP_METHOD.getTitle)" "$OX_BACKUP_ITEM"
+    # Si dossier existe
+    if ! Directory.exists $OX_BACKUP_PATH; then
+        mkdir $OX_BACKUP_PATH 2> ${OLIX_LOGGER_FILE_ERR} || return 1
+    fi
 
-    Backup.$OX_BACKUP_METHOD.check || return 1
-
-    Backup.Archive.set "$(Backup.$OX_BACKUP_METHOD.getPrefix)" "$(Backup.$OX_BACKUP_METHOD.getExtension)"
-    info "Sauvegarde ($OX_BACKUP_ITEM) -> $(Backup.Archive.get)"
-
-    Backup.${OX_BACKUP_METHOD}.doBackup
-    Backup.printResult $? || return 1
-
-    Backup.export || return 1
-
-    Backup.purge || return 1
+    # Si ecriture
+    Directory.writable $OX_BACKUP_PATH || return 1
 
     return 0
 }
 
 
 ###
-# Affiche le résultat de l'action de la sauvegarde
-# @param $1  : Si erreur ou pas
+# Retourne le nom complet du dossier de sauvegarde
 ##
-function Backup.printResult()
+function Backup.repository.get()
 {
-    debug "Backup.printResult ($1)"
-
-    OX_BACKUP_CHRONO_STOP=$SECONDS
-    Print.result $1 "Sauvegarde" "$(File.size.human $OX_BACKUP_ARCHIVE)" "$((OX_BACKUP_CHRONO_STOP-OX_BACKUP_CHRONO_START))"
-
-    return $1
+    echo -e $OX_BACKUP_PATH
 }
 
 
 ###
-# Transfert du fichier de backup sur un serveur distant
+# Retourne la liste des backups
 ##
-function Backup.export()
+function Backup.list.current()
 {
-    debug "Backup.export ()"
-    local RET
-    OX_BACKUP_CHRONO_START=$SECONDS
+    local PARAM
+    [[ -n $1 ]] && PARAM="-printf %f\n" || PARAM="-print"
+    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow $PARAM | sort
+}
 
-    [[ $OX_BACKUP_METHOD == 'Rsync' ]] && return 0
 
-    case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
-        ftp)
-            Ftp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
-            Ftp.put "$OX_BACKUP_ARCHIVE" "$OLIX_MODULE_BACKUP_EXPORT_PATH"
-            RET=$?
-            ;;
-        ssh)
-            Scp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
-            Scp.put "$OX_BACKUP_ARCHIVE" "$OLIX_MODULE_BACKUP_EXPORT_PATH"
-            RET=$?
-            ;;
-        none|false|null)
-            warning "Pas de transfert vers un autre serveur configuré"
-            return 0
-            ;;
-        *)
-            error "Methode '$OLIX_MODULE_BACKUP_EXPORT_MODE' d'export de la sauvegarde inconnue"
-            return 1
-            ;;
-    esac
-
-    Print.result $RET "Transfert vers le serveur de backup" "" "$((SECONDS-OX_BACKUP_CHRONO_START))"
-    [[ $? -ne 0 ]] && error && return 1
-    return 0
+###
+# Retourne la liste des archives qui peuvent être purgées
+##
+function Backup.list.purged()
+{
+    local PARAM
+    [[ -n $1 ]] && PARAM="-printf %f\n" || PARAM="-print"
+    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL $PARAM | sort
 }
 
 
@@ -144,18 +110,20 @@ function Backup.purge()
     debug "Backup.purge ()"
     local ARCHIVES RET I
 
-    ARCHIVES=( $(Backup.Archive.purged.list) )
+    ARCHIVES=( $(Backup.list.purged short) )
     Print.value "Purge des anciennes sauvegardes" "$(Array.count 'ARCHIVES')"
     Print.list "$(Array.all 'ARCHIVES')"
 
     # Purge des fichiers distants
     case $(String.lower $OLIX_MODULE_BACKUP_EXPORT_MODE) in
         ftp)
+            Ftp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
             for I in $(Array.all 'ARCHIVES'); do
                 Ftp.remove "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
             done
             ;;
         ssh)
+            Scp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
             for I in $(Array.all 'ARCHIVES'); do
                 Scp.remove "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
             done
@@ -163,10 +131,11 @@ function Backup.purge()
     esac
 
     # Purge locale
-    Backup.Archive.purge
+    debug "find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name '20*' -follow -mmin +$OX_BACKUP_ARCHIVE_TTL"
+    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL -exec rm -rf {} \; 2> ${OLIX_LOGGER_FILE_ERR}
     RET=$?
 
-    ARCHIVES=( $(Backup.Archive.list) )
+    ARCHIVES=( $(Backup.list.current short) )
     Print.value "Liste des sauvegardes restantes" "$(Array.count 'ARCHIVES')"
     Print.list "$(Array.all 'ARCHIVES')"
 
