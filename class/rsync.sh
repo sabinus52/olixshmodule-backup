@@ -102,7 +102,8 @@ function Backup.Rsync.export()
 
     case $(String.lower $1) in
         ftp)
-            return 1
+            warning 'Pas de transfert FTP en mode rsync'
+            return 100
             ;;
         ssh)
             # Dernière archive sur le serveur distant

@@ -95,6 +95,7 @@ function Backup.Archive.export()
     esac
 
     Backup.$OX_BACKUP_METHOD.export $OLIX_MODULE_BACKUP_EXPORT_MODE "$OLIX_MODULE_BACKUP_EXPORT_PATH/$BASEPATH"
+    [[ $? -eq 100 ]] && return 0
 
     Print.result $? "Transfert vers le serveur de backup" "" "$((SECONDS-OX_BACKUP_CHRONO_START))"
     [[ $? -ne 0 ]] && error && return 1

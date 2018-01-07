@@ -49,6 +49,7 @@ function Backup.initialize()
     OX_BACKUP_ARCHIVE_TTL=$2
 
     OX_BACKUP_PATH="$OX_BACKUP_ROOT/$OLIX_SYSTEM_DATE.$(date '+%H%M%S')"
+    Backup.repository.create
 }
 
 

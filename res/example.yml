@@ -1,0 +1,37 @@
+
+
+repository:
+    root:
+    chmod:
+archive:
+    ttl:
+
+method:
+tarball:
+    folders:
+    compress:
+    exclude:
+rsync:
+    folders:
+    exclude:
+mysql:
+    user:
+    pass:
+    bases:
+    compress:
+postgres:
+    user:
+    pass:
+    bases:
+    compress:
+
+export:
+    mode:
+    host:
+    user:
+    pass:
+    path:
+
+report:
+    format:
+    email:

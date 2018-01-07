@@ -27,6 +27,14 @@ if [[ -z $OLIX_MODULE_BACKUP_POSTGRES_BASES ]]; then
     critical "Nom de la base de données manquante"
 fi
 
+###
+# Si Fichier de configuration
+##
+if [[ -n $OLIX_MODULE_BACKUP_CONFYML ]]; then
+    Backup.yaml.load $OLIX_MODULE_BACKUP_CONFYML || critical "Impossible de lire le fichier de conf \"$OLIX_MODULE_BACKUP_CONFYML\""
+    Backup.yaml.setAll
+fi
+
 Backup.check.repository
 [[ $? -gt 100 ]] && critical "Le dossier \"$OLIX_MODULE_BACKUP_REPOSITORY_ROOT\" n'est pas accessible"
 
