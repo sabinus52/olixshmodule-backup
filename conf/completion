@@ -4,13 +4,13 @@
 ##
 _olixsh_module()
 {
-    local CURRENT MODULE ACTION PREVIOUS PARAM1 PARAM2 PARAM3 PARAM4 PARAM5
-    local LST_ACTIONS="help"
+    local I CURRENT MODULE ACTION PREVIOUS PARAM1 PARAM2 PARAM3 PARAM4 PARAM5
+    local LST_ACTIONS="help init check complete purge tarball mysql postgres rsync"
     COMPREPLY=()
     CURRENT="${COMP_WORDS[COMP_CWORD]}"
     PREVIOUS="${COMP_WORDS[COMP_CWORD-1]}"
 
-    if [[ "${PREVIOUS}" == "postgres" ]]; then
+    if [[ "${PREVIOUS}" == "backup" ]]; then
         COMPREPLY=( $(compgen -W "${LST_ACTIONS}" -- ${CURRENT}) )
         return 0
     fi
@@ -27,4 +27,39 @@ _olixsh_module()
             [[ -z ${PARAM5} ]] && PARAM5=${I} && continue
         fi
     done
+
+    case "${ACTION}" in
+        init)
+            COMPREPLY=( $(compgen -W "--conf=" -- ${CUR}) )
+            return 0
+            ;;
+        check)
+            COMPREPLY=( $(compgen -W "--conf=" -- ${CUR}) )
+            return 0
+            ;;
+        purge)
+            COMPREPLY=( $(compgen -W "--ttl=" -- ${CUR}) )
+            return 0
+            ;;
+        complete)
+            COMPREPLY=( $(compgen -W "--conf= --path= --ttl= --gz --bz2 --noz --html --email=" -- ${CUR}) )
+            return 0
+            ;;
+        tarball)
+            COMPREPLY=( $(compgen -W "--conf= --path= --gz --bz2 --noz --html --email=" -- ${CUR}) )
+            return 0
+            ;;
+        rsync)
+            COMPREPLY=( $(compgen -W "--conf= --path= --html --email=" -- ${CUR}) )
+            return 0
+            ;;
+        mysql)
+            COMPREPLY=( $(compgen -W "--conf= --path= --gz --bz2 --noz --html --email= --host= --port= --user= --pass=" -- ${CUR}) )
+            return 0
+            ;;
+        postgres)
+            COMPREPLY=( $(compgen -W "--conf= --path= --gz --bz2 --noz --html --email= --host= --port= --user= --pass=" -- ${CUR}) )
+            return 0
+            ;;
+    esac
 }
