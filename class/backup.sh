@@ -99,7 +99,7 @@ function Backup.list.purged()
 {
     local PARAM
     [[ -n $1 ]] && PARAM="-printf %f\n" || PARAM="-print"
-    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL $PARAM | sort
+    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mtime +$OX_BACKUP_ARCHIVE_TTL $PARAM | sort
 }
 
 
@@ -132,8 +132,8 @@ function Backup.purge()
     esac
 
     # Purge locale
-    debug "find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name '20*' -follow -mmin +$OX_BACKUP_ARCHIVE_TTL"
-    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mmin +$OX_BACKUP_ARCHIVE_TTL -exec rm -rf {} \; 2> ${OLIX_LOGGER_FILE_ERR}
+    debug "find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name '20*' -follow -mtime +$OX_BACKUP_ARCHIVE_TTL"
+    find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mtime +$OX_BACKUP_ARCHIVE_TTL -exec rm -rf {} \; 2> ${OLIX_LOGGER_FILE_ERR}
     RET=$?
 
     ARCHIVES=( $(Backup.list.current short) )
@@ -156,11 +156,11 @@ function Backup.terminate()
 
     if [[ $1 == true ]]; then
         Print.echo "Sauvegarde terminée en $(System.exec.time) secondes avec des erreurs" "${Crouge}"
-        Report.terminate "ERREUR - Rapport de backup des bases du serveur $HOSTNAME"
+        Report.terminate "ERREUR - Rapport de backup du serveur $HOSTNAME"
         OLIX_CODE_RETURN=1
     else
         Print.echo "Sauvegarde terminée en $(System.exec.time) secondes avec succès" "${Cvert}"
-        Report.terminate "Rapport de backup des bases du serveur $HOSTNAME"
+        Report.terminate "Rapport de backup du serveur $HOSTNAME"
         OLIX_CODE_RETURN=0
     fi
 }

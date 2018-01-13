@@ -62,4 +62,4 @@ done
 ###
 # FIN
 ##
-#Backup.terminate $IS_ERROR
+Backup.terminate $IS_ERROR
