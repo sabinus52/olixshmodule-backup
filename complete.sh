@@ -26,6 +26,7 @@ Backup.check.repository
 # Initialisation
 ##
 Backup.initialize "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+Backup.repository.create
 [[ $? -ne 0 ]] && critical "Impossible d'initialiser la sauvegarde"
 
 Report.initialize "$OLIX_MODULE_BACKUP_REPORT_FORMAT" \
@@ -82,7 +83,7 @@ done
 info "Purge des sauvegardes"
 Print.head2 "Purge des sauvegardes"
 Backup.purge
-[[ $? -ne 0 ]] && error
+[[ $? -ne 0 ]] && error && IS_ERROR=true
 
 
 ###
