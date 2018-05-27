@@ -43,6 +43,7 @@ Backup.check.repository
 # Initialisation
 ##
 Backup.initialize "$OLIX_MODULE_BACKUP_REPOSITORY_ROOT" "$OLIX_MODULE_BACKUP_ARCHIVE_TTL"
+Backup.repository.create
 [[ $? -ne 0 ]] && critical "Impossible d'initialiser la sauvegarde"
 
 Report.initialize "$OLIX_MODULE_BACKUP_REPORT_FORMAT" \

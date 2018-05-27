@@ -49,7 +49,6 @@ function Backup.initialize()
     OX_BACKUP_ARCHIVE_TTL=$2
 
     OX_BACKUP_PATH="$OX_BACKUP_ROOT/$OLIX_SYSTEM_DATE.$(date '+%H%M%S')"
-    Backup.repository.create
 }
 
 
@@ -99,6 +98,7 @@ function Backup.list.purged()
 {
     local PARAM
     [[ -n $1 ]] && PARAM="-printf %f\n" || PARAM="-print"
+    #echo "find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name 20* -follow -mtime +$OX_BACKUP_ARCHIVE_TTL $PARAM | sort"
     find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mtime +$OX_BACKUP_ARCHIVE_TTL $PARAM | sort
 }
 
@@ -109,7 +109,8 @@ function Backup.list.purged()
 function Backup.purge()
 {
     debug "Backup.purge ()"
-    local ARCHIVES RET I
+    local ARCHIVES I
+    local ISERROR=false
 
     ARCHIVES=( $(Backup.list.purged short) )
     Print.value "Purge des anciennes sauvegardes" "$(Array.count 'ARCHIVES')"
@@ -120,13 +121,15 @@ function Backup.purge()
         ftp)
             Ftp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
             for I in $(Array.all 'ARCHIVES'); do
-                Ftp.remove "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
+                Ftp.rmdir "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
+                [[ $? -ne 0 ]] && error && ISERROR=true
             done
             ;;
         ssh)
             Scp.initialize "$OLIX_MODULE_BACKUP_EXPORT_HOST" "$OLIX_MODULE_BACKUP_EXPORT_USER" "$OLIX_MODULE_BACKUP_EXPORT_PASS"
             for I in $(Array.all 'ARCHIVES'); do
-                Scp.remove "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
+                Scp.rmdir "$OLIX_MODULE_BACKUP_EXPORT_PATH/$I"
+                [[ $? -ne 0 ]] && error && ISERROR=true
             done
             ;;
     esac
@@ -134,13 +137,13 @@ function Backup.purge()
     # Purge locale
     debug "find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name '20*' -follow -mtime +$OX_BACKUP_ARCHIVE_TTL"
     find $OX_BACKUP_ROOT -mindepth 1 -maxdepth 1 -type d -name "20*" -follow -mtime +$OX_BACKUP_ARCHIVE_TTL -exec rm -rf {} \; 2> ${OLIX_LOGGER_FILE_ERR}
-    RET=$?
+    [[ $? -ne 0 ]] && ISERROR=true
 
     ARCHIVES=( $(Backup.list.current short) )
     Print.value "Liste des sauvegardes restantes" "$(Array.count 'ARCHIVES')"
     Print.list "$(Array.all 'ARCHIVES')"
 
-    [[ $RET -ne 0 ]] && error && return 1
+    [[ $ISERROR == true ]] && error && return 1
     return 0
 }
 
